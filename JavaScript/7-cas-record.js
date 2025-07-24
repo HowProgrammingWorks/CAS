@@ -4,15 +4,9 @@ class CASRecord {
   #value;
   #hash;
 
-  constructor(initialValue = 0) {
-    this.#value = initialValue;
-    this.#hash = null;
-    return this.#init();
-  }
-
-  async #init() {
-    this.#hash = await CASRecord.hash(this.#value);
-    return this;
+  constructor() {
+    this.#value = null;
+    this.#hash = '';
   }
 
   static async hash(value) {
@@ -41,8 +35,10 @@ class CASRecord {
 // Usage
 
 const main = async () => {
+  const reg = new CASRecord();
+
   const record1 = { value: 13.5, unit: 'm/s', precision: 0.1 };
-  const reg = await new CASRecord(record1);
+  await reg.cas('', record1);
   const state1 = reg.read();
   console.log('Initial:', state1);
 

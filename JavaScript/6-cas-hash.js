@@ -1,19 +1,8 @@
 'use strict';
 
 class CASRegister {
-  #value;
+  #value = 0;
   #hash;
-
-  constructor(initialValue = 0) {
-    this.#value = initialValue;
-    this.#hash = null;
-    return this.#init();
-  }
-
-  async #init() {
-    this.#hash = await CASRegister.hash(this.#value);
-    return this;
-  }
 
   static async hash(value) {
     const data = new TextEncoder().encode(value.toString());
@@ -30,7 +19,7 @@ class CASRegister {
     };
   }
 
-  async cas(expectedHash, value) {
+  async cas(value, expectedHash) {
     if (this.#hash !== expectedHash) return false;
     this.#value = value;
     this.#hash = await CASRegister.hash(value);
@@ -41,21 +30,23 @@ class CASRegister {
 // Usage
 
 const main = async () => {
-  const reg = await new CASRegister(100);
+  const reg = new CASRegister();
+
+  await reg.cas(42);
   const state1 = reg.read();
   console.log('Initial:', state1);
 
-  const res2 = await reg.cas(state1.hash, 42);
+  const res2 = await reg.cas(42, state1.hash);
   const state2 = reg.read();
   console.log('CAS success:', res2);
   console.log('State:', state2);
 
-  const res3 = await reg.cas(state1.hash, 99);
+  const res3 = await reg.cas(99, state1.hash);
   const state3 = reg.read();
   console.log('CAS success:', res3);
   console.log('State:', state3);
 
-  const res4 = await reg.cas(state2.hash, 77);
+  const res4 = await reg.cas(77, state1.hash);
   const state4 = reg.read();
   console.log('CAS success:', res4);
   console.log('State:', state4);
